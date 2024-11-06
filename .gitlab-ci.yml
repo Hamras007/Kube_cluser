@@ -9,6 +9,8 @@ job_1:
         - mkdir -p test/dir/
         - vim test/dir/hello.txt
         - cat "Hello"> test/dir/hello.txt
+    before_script:
+        - apt-get update && apt-get install -y vim     
     artifacts:
         paths:
             - test/dir/
