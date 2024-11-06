@@ -1,3 +1,18 @@
 stages: 
     - test
 
+job_1:
+    stage: test
+    script:
+        - echo "Testing................."
+        - echo "////////////////////////" 
+        - mkdir -p test/dir/
+        - vim test/dir/hello.txt
+        - cat "Hello"> test/dir/hello.txt
+    artifacts:
+        paths:
+            - test/dir/
+            - test/dir/hello.txt
+    tags:
+        - dind        
+       
