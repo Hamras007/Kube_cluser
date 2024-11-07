@@ -8,7 +8,7 @@ job_1:
         - echo "////////////////////////" 
         - mkdir -p test/dir/
         - touch test/dir/hello.txt
-        - cat "Hello"> test/dir/hello.txt     
+        - echo "Hello"> test/dir/hello.txt     
     artifacts:
         paths:
             - test/dir/
