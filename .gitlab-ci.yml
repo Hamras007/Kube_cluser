@@ -24,7 +24,7 @@ image:
 .ssh_test:
   stage: build
   script:
-    - *add_ssh_key
+    - add_ssh_key
     - ssh -vvv -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ubuntu@13.126.5.72
   tags:
     - dind
@@ -44,7 +44,7 @@ terraform_init:
 terraform_validate:
   stage: test
   script:
-    - *add_ssh_key
+    - add_ssh_key
     - terraform validate
   artifacts:
     paths:
@@ -56,7 +56,7 @@ terraform_validate:
 terraform_plan:
   stage: publish
   script:
-    - *add_ssh_key
+    - add_ssh_key
     - terraform plan
   artifacts:
     paths:
@@ -68,8 +68,8 @@ terraform_plan:
 terraform_apply:
   stage: deploy
   script:
-    - *add_ssh_key
-    - *install_ansible
+    - add_ssh_key
+    - install_ansible
     - terraform apply -auto-approve
   artifacts:
     paths:
@@ -82,7 +82,7 @@ terraform_apply:
 terraform_delete:
   stage: post
   script:
-    - *add_ssh_key
+    - add_ssh_key
     - terraform destroy -auto-approve
   tags:
     - dind
