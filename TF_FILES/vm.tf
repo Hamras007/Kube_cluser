@@ -46,7 +46,7 @@ resource "aws_instance" "app_server" {
   instance_type = "t2.micro"
   count = 1
   key_name = "my_new_ssh_pbkey"
-  vpc_security_group_ids = [aws_security_group.my_new_ssh_sg.id]
+  vpc_security_group_ids = [aws_security_group.ssh-sg.id]
 
   tags = {
     Name = "app_server"
