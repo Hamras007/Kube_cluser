@@ -1,18 +1,95 @@
-stages: 
-    - test
+stages:
+  - build
+  - test
+  - publish
+  - deploy
+  - post
 
-job_1:
-    stage: test
-    script:
-        - echo "Testing................."
-        - echo "////////////////////////" 
-        - mkdir -p test/dir/
-        - touch test/dir/hello.txt
-        - echo "Hello"> test/dir/hello.txt     
-    artifacts:
-        paths:
-            - test/dir/
-            - test/dir/hello.txt
-    tags:
-        - dind        
-       
+image:
+  name: hashicorp/terraform:latest
+  entrypoint:
+    - "/usr/bin/env"
+    - "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+
+.add_private_key: &add_ssh_key
+  - mkdir -p ~/.ssh
+  - cat $SSH_PRIVATE_KEY > ~/.ssh/id_rsa
+  - chmod 400 ~/.ssh/id_rsa
+
+.install_ansible: &install_ansible
+  - apk update
+  - apk add python3
+  - apk add ansible
+
+.ssh_test:
+  stage: build
+  script:
+    - *add_ssh_key
+    - ssh -vvv -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ubuntu@13.126.5.72
+  tags:
+    - container
+    - docker
+
+terraform_init:
+  stage: build
+  script:
+    - terraform init
+    - ls -al
+  artifacts:
+    paths:
+      - .terraform
+      - .terraform.lock.hcl
+  tags:
+    - container
+    - docker
+
+terraform_validate:
+  stage: test
+  script:
+    - *add_ssh_key
+    - terraform validate
+  artifacts:
+    paths:
+      - .terraform
+      - .terraform.lock.hcl
+  tags:
+    - container
+    - docker
+
+terraform_plan:
+  stage: publish
+  script:
+    - *add_ssh_key
+    - terraform plan
+  artifacts:
+    paths:
+      - .terraform
+      - .terraform.lock.hcl
+  tags:
+    - container
+    - docker
+
+terraform_apply:
+  stage: deploy
+  script:
+    - *add_ssh_key
+    - *install_ansible
+    - terraform apply -auto-approve
+  artifacts:
+    paths:
+      - .terraform
+      - .terraform.lock.hcl
+      - terraform.tfstate
+  tags:
+    - container
+    - docker
+  
+terraform_delete:
+  stage: post
+  script:
+    - *add_ssh_key
+    - terraform destroy -auto-approve
+  tags:
+    - container
+    - docker
+  when: manual
