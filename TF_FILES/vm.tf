@@ -15,7 +15,7 @@ provider "aws" {
 
 resource "aws_key_pair" "deployer" {
   key_name   = "ubuntu-ssh-key"
-  public_key = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQC2S0HhpB7nOtlMnBozTjBfhZEcMFV/lrQJ3E7c/ay0qK08uUARNCWAgO7G5yBxnwDU7SuQGJucxzPPO5bLiytqu9mOQ2BdqBriTf9iTyPKy5LE7cr7M3nipOExpRpnHewP8pXZHk+sQSqqGGfYqdl/j8Wpm1zzpchqdpq1368r1O5x9u3vt1Huh84bWgVQ4ichEREIAeeQt1M/fa6zWrWNQHSw5cvpiPzw1ohL3SdhFj6AhxpIB0+7CaYVtRxFGCGsd1CmkNDpYFgoN8oRIPwrGz1gBIvRG4z3x+dutMEHhJ11jOezMQ9JuCmW6vc7BPKElYg1KYx4LLr7ku8pYSPmls+gu5gD9JetpTieLZfbTtNIe6MKITUHbAYa3LxRKXHvAefIHjjDmhnOjKoNpYO9djYRwZUQ6gYLjoIC4dy661yIv7MDF3bXdwoRQvOLerb/h53zuwxK02eQcXd/MlLoMgBNCJLGCatNG6tc/l7LI9KXaYpb74Qm3ZTtL9tilgM= nov2023"
+  public_key = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCfqYUnn7D+XsHR7WHB5oG6GDOJDn/vzqb6VpcWhDHxvYSHDHN+ZK9Frugw4vz88h+eR1FClVz/CGH/jiXroN+1djHt9SH7E5gdh5f9KXRB6BJ3owvxT0hSK4N1t8ryNbo8Z74vDjUB0hqf9tKAODxHPWbC6BUGr6u2PGmzztGQMDJOKSk15YppeuCJbUdDsSzyUfEQD1riuJ/8I//RL8cNG3p0ZkLlEKFEo7lN5QaFEJbd9PfWm0z6ajMNZO52AtWaRYYqsq0XJeABiSQ2Z+2NrBv2+WzzWllPHAlaiJeLrNq27rp1PykhCqF/JTO6BZvZGt6H9fCiITqFDgkmIJW7hkcjl+hPV7MBBuT8wo4jfKa/0nV5HrWor8LbtUEXxow+QsCrHmqv6UciclrokGuwozk8RoQ0lKSo3cgllNZl+auGEPhhSeCTiNpjl01RQMhEz5QdnJSD3IfI8FtRGUKLYwbeUjSWqNyxNsn0mfKDukvyQ855CouK1Y5qLzAKZ68= root@master"
 }
 
 resource "aws_security_group" "ssh-sg" {
@@ -61,6 +61,6 @@ resource "aws_instance" "app_server" {
     }
   }
   provisioner "local-exec" {
-    command = "ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i '${self.public_ip},' apache-install.yml"
+    command = "ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i '${self.public_ip},' apache-ansible.yml"
   }
 }
