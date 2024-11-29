@@ -40,6 +40,8 @@ terraform_init:
       - .terraform.lock.hcl
   tags:
     - Docker_Runner
+  rules:
+    - when: manual   
 
 terraform_validate:
   stage: test
