@@ -155,6 +155,9 @@ control_plane
 worker_nodes
 EOF
 
+echo "Inventory file created:"
+cat inventory
+
 ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i inventory playbook.yml --private-key=${local_file.private_key_file.filename}
 EOT
   }
