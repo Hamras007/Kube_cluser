@@ -11,6 +11,8 @@ image:
 
     
 .install_ansible: &install_ansible
+  - export DEBIAN_FRONTEND=noninteractive
+  - export TZ=Asia/Kolkata
   - apt update
   - apt install -y python3
   - apt install -y ansible
