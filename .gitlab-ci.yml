@@ -22,7 +22,7 @@ image:
 terraform_init:
   stage: build
   script:
-    - echo "////////////////////////"
+    - echo "////////////////////////////"
     - terraform init
     - ls -al
   artifacts:
