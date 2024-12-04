@@ -58,6 +58,9 @@ terraform_plan:
 
 terraform_apply:
   stage: deploy
+  before_script:
+  - apt-get update && apt-get install -y ssh dos2unix
+
   script:
     - *install_ansible
     - terraform apply -auto-approve
