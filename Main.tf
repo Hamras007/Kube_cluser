@@ -142,7 +142,7 @@ resource "null_resource" "ansible_provision" {
 
   provisioner "local-exec" {
     command = <<EOT
-sleep 50
+/bin/bash -c "sleep 50
 cat <<EOF > inventory
 [control_plane]
 control-plane-node ansible_host=${aws_instance.control_plane.public_ip} ansible_user=ubuntu ansible_become_pass=""
@@ -159,6 +159,7 @@ echo "Inventory file created:"
 cat inventory
 
 ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i inventory playbook.yml --private-key=${local_file.private_key_file.filename}
+"
 EOT
   }
 }
