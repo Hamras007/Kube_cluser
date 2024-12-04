@@ -7,6 +7,10 @@ stages:
 
 image:
   name: hashicorp/terraform:latest
+  entrypoint:
+    - "/usr/bin/env"
+    - "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+
   
 .install_bash: &install_bash
   - apk update
@@ -22,7 +26,6 @@ image:
 terraform_init:
   stage: build
   script:
-    - *install_bash
     - echo "////////////////////////////"
     - terraform init
     - ls -al
@@ -38,7 +41,6 @@ terraform_init:
 terraform_validate:
   stage: test
   script:
-    - *install_bash
     - terraform validate
   artifacts:
     paths:
@@ -50,7 +52,6 @@ terraform_validate:
 terraform_plan:
   stage: publish
   script:
-    - *install_bash
     - terraform plan
   artifacts:
     paths:
@@ -77,7 +78,6 @@ terraform_apply:
 terraform_delete:
   stage: post
   script:
-    - *install_bash
     - terraform destroy -auto-approve
   tags:
     - Docker_Runner
