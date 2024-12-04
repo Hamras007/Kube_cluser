@@ -62,9 +62,13 @@ terraform_plan:
 
 terraform_apply:
   stage: deploy
-
+  image: ubuntu:22.04
+  before_script:
+    - apt-get update && apt-get install -y curl unzip 
+    - curl -fsSL https://apt.releases.hashicorp.com/gpg | apt-key add -
+    - apt-add-repository "deb https://apt.releases.hashicorp.com $(lsb_release -cs) main"
+    - apt-get update && apt-get install -y terraform 
   script:
-    - *install_bash
     - *install_ansible
     - terraform apply -auto-approve
   artifacts:
