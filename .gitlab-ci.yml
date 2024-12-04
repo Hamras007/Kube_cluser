@@ -7,11 +7,8 @@ stages:
 
 image:
   name: hashicorp/terraform:latest
-  entrypoint:
-    - "/usr/bin/env"
-    - "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
-
-
+  entrypoint: ["/bin/bash", "-l", "-c"]
+    
 .install_ansible: &install_ansible
   - apk update
   - apk add python3
@@ -58,8 +55,6 @@ terraform_plan:
 
 terraform_apply:
   stage: deploy
-  before_script:
-  - apt-get update && apt-get install -y ssh dos2unix
 
   script:
     - *install_ansible
