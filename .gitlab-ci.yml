@@ -1,7 +1,5 @@
 stages:
   - build
-  - test
-  - publish
   - deploy
   - post
 
@@ -29,6 +27,8 @@ terraform_init:
     - echo "/////////////////////////////"
     - terraform init
     - ls -al
+    - terraform validate
+    - terraform plan
   artifacts:
     paths:
       - .terraform
@@ -38,36 +38,16 @@ terraform_init:
   rules:
     - when: manual   
 
-terraform_validate:
-  stage: test
-  script:
-    - terraform validate
-  artifacts:
-    paths:
-      - .terraform
-      - .terraform.lock.hcl
-  tags:
-    - Docker_Runner
-
-terraform_plan:
-  stage: publish
-  script:
-    - terraform plan
-  artifacts:
-    paths:
-      - .terraform
-      - .terraform.lock.hcl
-  tags:
-    - Docker_Runner
-
 terraform_apply:
   stage: deploy
   image: ubuntu:22.04
   before_script:
-    - apt-get update && apt-get install -y curl unzip 
-    - curl -fsSL https://apt.releases.hashicorp.com/gpg | apt-key add -
-    - apt-add-repository "deb https://apt.releases.hashicorp.com $(lsb_release -cs) main"
-    - apt-get update && apt-get install -y terraform 
+    - apt-get update && apt-get install -y wget gnupg unzip lsb-release
+    - wget -O- https://apt.releases.hashicorp.com/gpg | gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg
+    - echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" | tee /etc/apt/sources.list.d/hashicorp.list
+    - apt-get update
+    - apt-get install -y terraform
+
   script:
     - *install_ansible
     - terraform apply -auto-approve
