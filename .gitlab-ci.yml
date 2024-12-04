@@ -9,15 +9,11 @@ image:
     - "/usr/bin/env"
     - "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 
-  
-.install_bash: &install_bash
-  - apk update
-  - apk add bash
     
 .install_ansible: &install_ansible
-  - apk update
-  - apk add python3
-  - apk add ansible
+  - apt-get update
+  - apt-get install -y python3
+  - apt-get install -y ansible
 
 
 
