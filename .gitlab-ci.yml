@@ -11,9 +11,9 @@ image:
 
     
 .install_ansible: &install_ansible
-  - apt-get update
-  - apt-get install -y python3
-  - apt-get install -y ansible
+  - apt update
+  - apt install -y python3
+  - apt install -y ansible
 
 
 
@@ -38,11 +38,11 @@ terraform_apply:
   stage: deploy
   image: ubuntu:22.04
   before_script:
-    - apt-get update && apt-get install -y wget gnupg unzip lsb-release
+    - apt update && apt install -y wget gnupg unzip lsb-release
     - wget -O- https://apt.releases.hashicorp.com/gpg | gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg
     - echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" | tee /etc/apt/sources.list.d/hashicorp.list
-    - apt-get update
-    - apt-get install -y terraform
+    - apt update
+    - apt install -y terraform
 
   script:
     - *install_ansible
