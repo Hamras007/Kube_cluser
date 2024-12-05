@@ -52,15 +52,18 @@ pipeline {
             }
         }
 
-        stage('Post - Terraform Destroy') {
-            when {
-                expression { return env.DESTROY == 'true' } // Set DESTROY=true in Jenkins parameters to trigger this stage
-            }
+         stage('Post - Terraform Destroy') {
             steps {
-                sh 'terraform destroy -auto-approve'
+                script {
+                    input message: "Do you want to destroy the Terraform resources?",
+                          ok: "Yes, destroy",
+                          parameters: []
+                    sh 'terraform destroy -auto-approve'
+                }
             }
         }
     }
+
     post {
         failure {
             echo 'Pipeline failed!'
@@ -69,5 +72,4 @@ pipeline {
             echo 'Pipeline succeeded!'
         }
     }
-
 }
