@@ -55,7 +55,13 @@ pipeline {
                             apk add aws-cli
                             terraform apply -auto-approve
                             cat admin.conf
-                            
+                            echo "$(terraform output -raw control_plane_ip)"
+                            echo "$(terraform output -raw worker_node_ip)"
+                            echo "$(terraform output -raw control_plane_ip)" > control_plane_ip
+                            echo "$(terraform output -raw worker_node_ip)" > worker_node_ip
+                            aws s3 ls s3://testing-s3-bucket-007/
+                            aws s3 cp control_plane_ip s3://testing-s3-bucket-007/
+                            aws s3 cp worker_node_ip s3://testing-s3-bucket-007/
                             aws s3 ls s3://testing-s3-bucket-007/
                             aws s3 rm s3://testing-s3-bucket-007/admin.conf
                             aws s3 ls s3://testing-s3-bucket-007/
