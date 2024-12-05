@@ -165,7 +165,7 @@ resource "null_resource" "ansible_provision" {
 
   provisioner "local-exec" {
 
-    command= "sleep 40 && ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i ${local_file.inventory.filename} playbook.yml --private-key=${local_file.private_key_file.filename}"
+    command= "sleep 10 && ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i ${local_file.inventory.filename} playbook.yml --private-key=${local_file.private_key_file.filename}"
   }
 }
 
@@ -174,7 +174,6 @@ resource "null_resource" "kube_conf_retrieve" {
   provisioner "remote-exec" {
 
  inline = [
-      "sleep 30",
       "sudo mkdir -p /etc/kubernetes",
       "sudo cp /etc/kubernetes/admin.conf /home/ubuntu/admin.conf",
       "sudo chmod 777 /home/ubuntu/admin.conf"
