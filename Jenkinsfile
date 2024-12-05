@@ -14,17 +14,24 @@ pipeline {
     }
 
     stages {
-        
-        
         stage('Build - Terraform Init and Plan') {
             steps {
-                
-                sh '''
-                    terraform init
-                    ls -al
-                    terraform validate
-                    terraform plan
-                '''
+                script {
+                    def userInput = input(
+                        message: 'Do you want to run Build - Terraform Init and Plan?',
+                        parameters: [choice(name: 'Response', choices: ['Yes', 'No'], description: 'Select Yes or No')]
+                    )
+                    if (userInput == 'Yes') {
+                        sh '''
+                            terraform init
+                            ls -al
+                            terraform validate
+                            terraform plan
+                        '''
+                    } else {
+                        echo 'Skipping Build - Terraform Init and Plan as per user input.'
+                    }
+                }
             }
             post {
                 always {
@@ -36,14 +43,21 @@ pipeline {
         stage('Deploy - Terraform Apply') {
             steps {
                 script {
-                    // Install Ansible dependencies
-                    sh '''
-                        apk update
-                        apk add python3
-                        apk add ansible
-                    '''
+                    def userInput = input(
+                        message: 'Do you want to run Deploy - Terraform Apply?',
+                        parameters: [choice(name: 'Response', choices: ['Yes', 'No'], description: 'Select Yes or No')]
+                    )
+                    if (userInput == 'Yes') {
+                        sh '''
+                            apk update
+                            apk add python3
+                            apk add ansible
+                            terraform apply -auto-approve
+                        '''
+                    } else {
+                        echo 'Skipping Deploy - Terraform Apply as per user input.'
+                    }
                 }
-                sh 'terraform apply -auto-approve'
             }
             post {
                 always {
@@ -52,13 +66,18 @@ pipeline {
             }
         }
 
-         stage('Post - Terraform Destroy') {
+        stage('Post - Terraform Destroy') {
             steps {
                 script {
-                    input message: "Do you want to destroy the Terraform resources?",
-                          ok: "Yes, destroy",
-                          parameters: []
-                    sh 'terraform destroy -auto-approve'
+                    def userInput = input(
+                        message: 'Do you want to destroy the Terraform resources?',
+                        parameters: [choice(name: 'Response', choices: ['Yes', 'No'], description: 'Select Yes or No')]
+                    )
+                    if (userInput == 'Yes') {
+                        sh 'terraform destroy -auto-approve'
+                    } else {
+                        echo 'Skipping Terraform Destroy as per user input.'
+                    }
                 }
             }
         }
@@ -73,3 +92,4 @@ pipeline {
         }
     }
 }
+
