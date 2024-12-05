@@ -137,13 +137,10 @@ output "private_key" {
   sensitive = true
 }
 
-resource "null_resource" "ansible_provision" {
-  depends_on = [ aws_instance.control_plane, aws_instance.worker_node ]
 
-  provisioner "local-exec" {
-    command = <<EOT
-/bin/bash -c "sleep 50
-cat <<EOF > inventory
+# Create Ansible Inventory Template
+data "template_file" "inventory" {
+  template = <<EOT
 [control_plane]
 control-plane-node ansible_host=${aws_instance.control_plane.public_ip} ansible_user=ubuntu ansible_become_pass=""
 
@@ -153,13 +150,21 @@ worker-node-1 ansible_host=${aws_instance.worker_node.public_ip} ansible_user=ub
 [all:children]
 control_plane
 worker_nodes
-EOF
-
-echo "Inventory file created:"
-cat inventory
-
-ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i inventory playbook.yml --private-key=${local_file.private_key_file.filename}
-"
 EOT
+}
+
+# Save Inventory File Locally
+resource "local_file" "inventory" {
+  content  = data.template_file.inventory.rendered
+  filename = "${path.module}/inventory"
+}
+
+
+resource "null_resource" "ansible_provision" {
+  depends_on = [ aws_instance.control_plane, aws_instance.worker_node ]
+
+  provisioner "local-exec" {
+
+    command= "sleep 40 && ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i ${local_file.inventory.filename} ping_playbook.yml --private-key=${local_file.private_key_file.filename}"
   }
 }
