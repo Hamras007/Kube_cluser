@@ -20,12 +20,14 @@ image:
 terraform_init:
   stage: build
   script:
+    - ls -a
     - echo "/////////////////////////////"
     - sleep 5
     - terraform init
     - ls -al
     - terraform validate
     - terraform plan
+    - ls -a
   artifacts:
     paths:
       - .terraform
@@ -40,6 +42,7 @@ terraform_apply:
   script:
     - *install_ansible
     - terraform apply -auto-approve
+    - ls -a
   artifacts:
     paths:
       - .terraform
@@ -52,6 +55,7 @@ terraform_delete:
   stage: post
   script:
     - terraform destroy -auto-approve
+    - ls -a
   tags:
     - Docker_Runner
   when: manual
