@@ -2,17 +2,15 @@ pipeline {
     agent {
         docker {
             image 'hashicorp/terraform:latest'
-            args '-u root'
+            args '--privileged -v /var/run/docker.sock:/var/run/docker.sock --entrypoint=""'
         }
     }
     environment {
         PATH = "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+        DOCKER_TLS_CERTDIR = ''
     }
 
-    parameters {
-        booleanParam(name: 'autoApprove', defaultValue: false, description: 'Automatically run apply after generating plan?')
-        choice(name: 'action', choices: ['apply', 'destroy'], description: 'Select the action to perform')
-    }
+    
 
     environment {
         AWS_ACCESS_KEY_ID     = credentials('aws_access_key_id')
@@ -23,36 +21,58 @@ pipeline {
     stages {
         
         
-        stage('Terraform init') {
+        stage('Build - Terraform Init and Plan') {
             steps {
-                sh 'terraform init'
+                
+                sh '''
+                    terraform init
+                    ls -al
+                    terraform validate
+                    terraform plan
+                '''
             }
-        }
-        stage('Plan') {
-            steps {
-                sh 'terraform plan -out tfplan'
-                sh 'terraform show -no-color tfplan > tfplan.txt'
-            }
-        }
-        stage('Apply / Destroy') {
-            steps {
-                script {
-                    if (params.action == 'apply') {
-                        if (!params.autoApprove) {
-                            def plan = readFile 'tfplan.txt'
-                            input message: "Do you want to apply the plan?",
-                            parameters: [text(name: 'Plan', description: 'Please review the plan', defaultValue: plan)]
-                        }
-
-                        sh 'terraform ${action} -input=false tfplan'
-                    } else if (params.action == 'destroy') {
-                        sh 'terraform ${action} --auto-approve'
-                    } else {
-                        error "Invalid action selected. Please choose either 'apply' or 'destroy'."
-                    }
+            post {
+                always {
+                    archiveArtifacts artifacts: '.terraform, .terraform.lock.hcl', allowEmptyArchive: true
                 }
             }
         }
 
+        stage('Deploy - Terraform Apply') {
+            steps {
+                script {
+                    // Install Ansible dependencies
+                    sh '''
+                        apk update
+                        apk add python3
+                        apk add ansible
+                    '''
+                }
+                sh 'terraform apply -auto-approve'
+            }
+            post {
+                always {
+                    archiveArtifacts artifacts: '.terraform, .terraform.lock.hcl, terraform.tfstate', allowEmptyArchive: true
+                }
+            }
+        }
+
+        stage('Post - Terraform Destroy') {
+            when {
+                expression { return env.DESTROY == 'true' } // Set DESTROY=true in Jenkins parameters to trigger this stage
+            }
+            steps {
+                sh 'terraform destroy -auto-approve'
+            }
+        }
     }
+    post {
+        failure {
+            echo 'Pipeline failed!'
+        }
+        success {
+            echo 'Pipeline succeeded!'
+        }
+    }
+
 }
