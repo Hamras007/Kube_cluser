@@ -55,10 +55,13 @@ pipeline {
                             apk add aws-cli
                             terraform apply -auto-approve
                             cat admin.conf
-                            aws s3 ls
+                            
+                            aws s3 ls s3://testing-s3-bucket-007/
+                            aws s3 rm s3://testing-s3-bucket-007/admin.conf
+                            aws s3 ls s3://testing-s3-bucket-007/
                             aws s3 cp admin.conf s3://testing-s3-bucket-007/
                             aws s3 ls s3://testing-s3-bucket-007/
-                        '''
+                         '''
                     } else {
                         echo 'Skipping Deploy - Terraform Apply as per user input.'
                     }
