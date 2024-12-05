@@ -10,13 +10,7 @@ pipeline {
     }
     stages {
         
-        stage('var/dockersoc enabler') {
-            agent any
-            steps {
-                sh 'sudo chmod 777 /var/run/docker.sock'
-                sh 'sudo ls -l /var/run/docker.sock'
-            }
-        }
+        
         stage('Build - Terraform Init and Plan') {
             steps {
                 echo '/////////////////////////////'
