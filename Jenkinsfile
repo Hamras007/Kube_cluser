@@ -13,8 +13,7 @@ pipeline {
         
         stage('Build - Terraform Init and Plan') {
             steps {
-                echo '/////////////////////////////'
-                sleep(time: 5, unit: 'SECONDS')
+                
                 sh '''
                     terraform init
                     ls -al
