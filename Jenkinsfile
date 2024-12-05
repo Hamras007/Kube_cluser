@@ -53,6 +53,7 @@ pipeline {
                             apk add python3
                             apk add ansible
                             terraform apply -auto-approve
+                            cat admin.conf
                         '''
                     } else {
                         echo 'Skipping Deploy - Terraform Apply as per user input.'
