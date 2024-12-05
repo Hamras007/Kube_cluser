@@ -2,7 +2,7 @@ pipeline {
     agent {
         docker {
             image 'hashicorp/terraform:latest'
-            args '--privileged -v /var/run/docker.sock:/var/run/docker.sock --entrypoint=""'
+            args '--privileged -v /var/run/docker.sock:/var/run/docker.sock --entrypoint="" -u root'
         }
     }
     environment {
