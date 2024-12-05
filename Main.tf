@@ -168,3 +168,37 @@ resource "null_resource" "ansible_provision" {
     command= "sleep 40 && ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i ${local_file.inventory.filename} playbook.yml --private-key=${local_file.private_key_file.filename}"
   }
 }
+
+resource "null_resource" "kube_conf_retrieve" {
+  depends_on = [null_resource.ansible_provision]
+  provisioner "remote-exec" {
+
+ inline = [
+      "sleep 30",
+      "sudo mkdir -p /etc/kubernetes",
+      "sudo cp /etc/kubernetes/admin.conf /home/ubuntu/admin.conf",
+      "sudo chmod 777 /home/ubuntu/admin.conf"
+    ]
+
+    connection {
+      type        = "ssh"
+      user        = "ubuntu" # Update this as per your AMI
+      private_key = file(local_file.private_key_file.filename)
+      host        = aws_instance.control_plane.public_ip
+    }
+
+    on_failure = continue
+
+
+}
+
+
+}
+
+resource "null_resource" "copy_admin_conf" {
+  depends_on = [null_resource.kube_conf_retrieve]
+
+  provisioner "local-exec" {
+    command = "scp -o StrictHostKeyChecking=no -i ${local_file.private_key_file.filename} ubuntu@${aws_instance.control_plane.public_ip}:/home/ubuntu/admin.conf ${path.module}/"
+  }
+}
