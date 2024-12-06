@@ -34,29 +34,14 @@ resource "aws_security_group" "k8s_sg" {
   description = "Allow necessary traffic for Kubernetes cluster"
 
   ingress {
-    description = "Allow SSH"
-    from_port   = 22
-    to_port     = 22
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  ingress {
-    description = "Allow Kubernetes API Server traffic"
-    from_port   = 6443
-    to_port     = 6443
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  ingress {
-    description = "Allow pod communication"
+    description = "Allow all traffic"
     from_port   = 0
-    to_port     = 65535
-    protocol    = "tcp"
+    to_port     = 0
+    protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
 
+  
   egress {
     description = "Allow all outbound traffic"
     from_port   = 0
