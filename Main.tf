@@ -108,7 +108,7 @@ resource "aws_instance" "control_plane" {
 
 resource "aws_instance" "worker_node" {
   ami           = "ami-09b0a86a2c84101e1"
-  instance_type = "t2.medium"
+  instance_type = "t2.large"
   key_name      = aws_key_pair.k8s_key.key_name
   security_groups = [aws_security_group.k8s_sg.name]
 
