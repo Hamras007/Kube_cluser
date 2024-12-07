@@ -205,7 +205,7 @@ resource "aws_lb" "k8s_nlb" {
   internal           = false
   load_balancer_type = "application"
   subnets            = [aws_subnet.k8s_subnet_public.id, aws_subnet.k8s_subnet_public_A.id] 
-
+  security_groups    = [aws_security_group.k8s_sg.id]
   enable_deletion_protection = false
 
   tags = {
@@ -213,39 +213,111 @@ resource "aws_lb" "k8s_nlb" {
   }
 }
 
+
+
+
+
+
 # Create NLB Target Group
-resource "aws_lb_target_group" "k8s_nlb_target_group" {
-  name        = "k8s-nlb-target-group"
+resource "aws_lb_target_group" "frontend_tg" {
+  name        = "frontend-tg"
   port        = 80
   protocol    = "HTTP"
-  vpc_id      = aws_vpc.k8s_vpc.id
-  target_type = "ip"
+  target_type = "ip"                      # Communicates directly with pod IPs
+  vpc_id      = aws_vpc.k8s_vpc.id        # VPC where Kubernetes cluster is running
 
   health_check {
-    healthy_threshold   = 3
-    unhealthy_threshold = 3
+    protocol = "HTTP"
+    path     = "/"                         # Root path for health check
     interval            = 30
     timeout             = 5
-    protocol            = "HTTP"
+    healthy_threshold   = 2
+    unhealthy_threshold = 2
   }
 
   tags = {
-    Name = "k8s-nlb-target-group"
+    Name = "frontend-tg"
   }
 }
 
+
+resource "aws_lb_target_group" "users_tg" {
+  name        = "users-tg"
+  port        = 80
+  protocol    = "HTTP"
+  target_type = "ip"
+  vpc_id      = aws_vpc.k8s_vpc.id
+
+  health_check {
+    protocol = "HTTP"
+    path     = "/users"                   # API-specific health check path
+    interval            = 30
+    timeout             = 5
+    healthy_threshold   = 2
+    unhealthy_threshold = 2
+  }
+
+  tags = {
+    Name = "users-tg"
+  }
+}
+
+resource "aws_lb_target_group" "products_tg" {
+  name        = "products-tg"
+  port        = 80
+  protocol    = "HTTP"
+  target_type = "ip"
+  vpc_id      = aws_vpc.k8s_vpc.id
+
+  health_check {
+    protocol = "HTTP"
+    path     = "/products"                   # API-specific health check path
+    interval            = 30
+    timeout             = 5
+    healthy_threshold   = 2
+    unhealthy_threshold = 2
+  }
+
+  tags = {
+    Name = "users-tg"
+  }
+}
+ 
+
 # Create NLB Listener
-resource "aws_lb_listener" "k8s_nlb_listener" {
+resource "aws_lb_listener" "frontend_listener" {
   load_balancer_arn = aws_lb.k8s_nlb.arn
   port              = 80
   protocol          = "HTTP"
 
   default_action {
     type             = "forward"
-    target_group_arn = aws_lb_target_group.k8s_nlb_target_group.arn
+    target_group_arn = aws_lb_target_group.frontend_tg.arn
   }
 }
 
+resource "aws_lb_listener" "users_listener" {
+  load_balancer_arn = aws_lb.k8s_nlb.arn
+  port              = 8081                       # Backend API port
+  protocol          = "HTTP"
+
+  default_action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.users_tg.arn
+  }
+}
+
+
+resource "aws_lb_listener" "products_listener" {
+  load_balancer_arn = aws_lb.k8s_nlb.arn
+  port              = 8082                       # Backend API port
+  protocol          = "HTTP"
+
+  default_action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.products_tg.arn
+  }
+}
 
 
 
@@ -297,7 +369,7 @@ resource "aws_autoscaling_group" "worker_node_asg" {
   force_delete              = true
   wait_for_capacity_timeout = "0"
 
-#target_group_arns = [aws_lb_target_group.k8s_nlb_target_group.arn]
+target_group_arns = [aws_lb_target_group.k8s_nlb_target_group.arn]
 
   tag {
     key                 = "Name"
