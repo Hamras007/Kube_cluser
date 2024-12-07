@@ -58,10 +58,12 @@ pipeline {
                             echo "$(terraform output -raw control_plane_ip)"
                             echo "$(terraform output -raw worker_node_ip_1)"
                             echo "$(terraform output -raw worker_node_ip_2)"
-                            echo "$(terraform output -raw worker_node_ip_2)"
+                            echo "$(terraform output -raw lb_dns)"
+                            echo "$(terraform output -raw lb_dns)" > lb_dns
                             echo "$(terraform output -raw control_plane_ip)" > control_plane_ip
                             echo "$(terraform output -raw worker_node_ip_1)" > worker_node_ip_1
                             aws s3 ls s3://testing-s3-bucket-007/
+                            aws s3 cp lb_dns s3://testing-s3-bucket-007/
                             aws s3 cp control_plane_ip s3://testing-s3-bucket-007/
                             aws s3 cp worker_node_ip_1 s3://testing-s3-bucket-007/
                             aws s3 ls s3://testing-s3-bucket-007/
