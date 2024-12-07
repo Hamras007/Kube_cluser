@@ -1,0 +1,61 @@
+- name: Add control-plane entry to /etc/hosts
+  lineinfile:
+        path: /etc/hosts
+        line: "192.168.94.23 control-plane-node"
+        state: present
+
+- name: Add worker-node entry to /etc/hosts
+  lineinfile:
+        path: /etc/hosts
+        line: "192.168.94.24 worker-node-1"
+        state: present
+
+
+- name: Disable swap
+  command: swapoff -a
+
+- name: Comment swap entry in /etc/fstab
+  lineinfile:
+    path: /etc/fstab
+    regexp: '^.*swap.*$'
+    line: '#\g<0>'
+    backrefs: yes
+
+- name: Load necessary kernel modules
+  copy:
+    dest: /etc/modules-load.d/containerd.conf
+    content: |
+      overlay
+      br_netfilter
+
+- name: Ensure kernel modules are loaded
+  shell: |
+    modprobe overlay
+    modprobe br_netfilter
+    lsmod | grep -E 'overlay|br_netfilter'
+  register: kernel_module_status
+
+- name: Display the kernel module status
+  debug:
+    msg: "{{ kernel_module_status.stdout }}"
+
+- name: Set kernel parameters for Kubernetes
+  copy:
+    dest: /etc/sysctl.d/kubernetes.conf
+    content: |
+      net.bridge.bridge-nf-call-ip6tables = 1
+      net.bridge.bridge-nf-call-iptables = 1
+      net.ipv4.ip_forward = 1
+
+- name: Apply sysctl parameters
+  command: sysctl --system
+
+- name: Install dependencies
+  apt:
+    name:
+      - apt-transport-https
+      - ca-certificates
+      - curl
+      - gpg
+    state: present
+    update_cache: true

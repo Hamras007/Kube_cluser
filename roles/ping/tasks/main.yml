@@ -1,0 +1,10 @@
+- name: Ping
+  ping:
+
+- name: Sudo check
+  command: cat /root/.profile
+  register: sudo_check
+
+- name: Print content of testfile.txt
+  debug:
+   msg: "{{ sudo_check.stdout }}"

@@ -1,0 +1,74 @@
+- name: Check if Kubernetes repository is already added
+  stat:
+    path: /etc/apt/sources.list.d/kubernetes.list
+  register: repo_exists
+
+- name: Add Kubernetes repository and key
+  shell: |
+    mkdir -p /etc/apt/keyrings
+    curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.29/deb/Release.key | gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+    echo 'deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.29/deb/ /' > /etc/apt/sources.list.d/kubernetes.list
+  args:
+    executable: /bin/bash
+  when: not repo_exists.stat.exists
+
+- name: Update apt cache
+  apt:
+    update_cache: yes
+
+- name: Install containerd and Kubernetes tools
+  apt:
+    name:
+      - docker.io
+      - kubelet
+      - kubeadm
+      - kubectl
+    state: present
+    update_cache: yes
+
+- name: Enable and start Docker
+  service:
+    name: docker
+    enabled: true
+    state: started
+
+- name: Configure containerd
+  shell: |
+    mkdir -p /etc/containerd
+    containerd config default > /etc/containerd/config.toml
+    sed -i 's/SystemdCgroup = false/SystemdCgroup = true/' /etc/containerd/config.toml
+    systemctl restart containerd
+
+
+- name: Initialize Kubernetes control plane
+  shell: |
+    kubeadm init --apiserver-cert-extra-sans={{ ansible_host }} --control-plane-endpoint={{ ansible_host }}:6443 --upload-certs --pod-network-cidr=10.12.0.0/16
+  register: init_output
+
+- name: Display the output of kubeadm init
+  debug:
+    msg: "kubeadm init output: {{ init_output.stdout }}"
+
+
+- name: Generate the kubeadm join command
+  shell: kubeadm token create --print-join-command
+  register: join_command_output
+
+- name: Save kubeadm join command
+  set_fact:
+    join_command: "{{ join_command_output.stdout }}"
+
+- name: Display the join command
+  debug:
+    msg: "The join command is: {{ join_command }}"
+
+- name: Configure kubectl for root
+  shell: |
+    mkdir -p $HOME/.kube
+    cp /etc/kubernetes/admin.conf $HOME/.kube/config
+    chown $(id -u):$(id -g) $HOME/.kube/config
+
+- name: Deploy Calico network
+  shell: |
+    kubectl create -f https://raw.githubusercontent.com/projectcalico/calico/v3.27.2/manifests/tigera-operator.yaml
+    kubectl apply -f https://raw.githubusercontent.com/projectcalico/calico/v3.27.2/manifests/calico.yaml
