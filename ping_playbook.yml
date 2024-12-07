@@ -1,0 +1,8 @@
+- name: Pinging nodes
+  hosts: all
+  become: true
+  become_method: sudo
+  tasks:
+    - name: Pinging all the nodes
+      include_role:
+        name: ping

@@ -1,0 +1,43 @@
+- name: Check if Kubernetes repository is already added
+  stat:
+    path: /etc/apt/sources.list.d/kubernetes.list
+  register: repo_exists
+
+- name: Add Kubernetes repository and key
+  shell: |
+    mkdir -p /etc/apt/keyrings
+    curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.29/deb/Release.key | gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+    echo 'deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.29/deb/ /' > /etc/apt/sources.list.d/kubernetes.list
+  args:
+    executable: /bin/bash
+  when: not repo_exists.stat.exists
+
+- name: Update apt cache
+  apt:
+    update_cache: yes
+
+- name: Install containerd and Kubernetes tools
+  apt:
+    name:
+      - docker.io
+      - kubelet
+      - kubeadm
+      - kubectl
+    state: present
+    update_cache: yes
+
+- name: Enable and start Docker
+  service:
+    name: docker
+    enabled: true
+    state: started
+
+- name: Configure containerd
+  shell: |
+    mkdir -p /etc/containerd
+    containerd config default > /etc/containerd/config.toml
+    sed -i 's/SystemdCgroup = false/SystemdCgroup = true/' /etc/containerd/config.toml
+    systemctl restart containerd
+
+- name: Join Kubernetes cluster
+  shell: "{{ join_command }}"

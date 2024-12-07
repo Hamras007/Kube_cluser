@@ -1,0 +1,30 @@
+- name: Setup Kubernetes Cluster
+  hosts: all
+  become: true
+  become_method: sudo
+  tasks:
+    - name: Ensure required modules are loaded
+      include_role:
+        name: common
+
+- name: Initialize control plane
+  hosts: control_plane
+  become: true
+  become_method: sudo
+  tasks:
+    - name: Setup control plane
+      include_role:
+        name: control_plane
+
+- name: Join worker nodes to cluster
+  hosts: worker_nodes
+  become: true
+  become_method: sudo
+
+  vars:
+    join_command: "{{ hostvars['control-plane-node']['join_command'] }}"
+
+  tasks:
+    - name: Setup worker node
+      include_role:
+        name: worker_node
