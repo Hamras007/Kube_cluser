@@ -1,11 +1,11 @@
 pipeline {
     agent {   
-        docker {  
-            image 'hashicorp/terraform:latest'  
+        docker {   
+            image 'hashicorp/terraform:latest'
             args '--privileged -v /var/run/docker.sock:/var/run/docker.sock --entrypoint="" -u root'
         }
     }
-    environment { 
+    environment {
         PATH = "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
         DOCKER_TLS_CERTDIR = ''
         AWS_ACCESS_KEY_ID     = credentials('aws_access_key_id')
@@ -53,31 +53,19 @@ pipeline {
                             apk add python3
                             apk add ansible
                             apk add aws-cli
-
                             terraform apply -auto-approve
-
                             cat admin.conf
-
                             echo "$(terraform output -raw control_plane_ip)"
-                            echo "$(terraform output -raw worker_node_ip_1)"
-                            echo "$(terraform output -raw worker_node_ip_2)"
-                            echo "$(terraform output -raw lb_dns)"
-
-                            echo "$(terraform output -raw lb_dns)" > lb_dns
+                            echo "$(terraform output -raw worker_node_ip)"
                             echo "$(terraform output -raw control_plane_ip)" > control_plane_ip
-                            echo "$(terraform output -raw worker_node_ip_1)" > worker_node_ip_1
-                            echo "$(terraform output -raw worker_node_ip_2)" > worker_node_ip_2
-
+                            echo "$(terraform output -raw worker_node_ip)" > worker_node_ip
                             aws s3 ls s3://testing-s3-bucket-007/
-                            
-                            aws s3 cp lb_dns s3://testing-s3-bucket-007/
                             aws s3 cp control_plane_ip s3://testing-s3-bucket-007/
-                            aws s3 cp worker_node_ip_1 s3://testing-s3-bucket-007/
-                            aws s3 cp worker_node_ip_2 s3://testing-s3-bucket-007/
-
-                            
+                            aws s3 cp worker_node_ip s3://testing-s3-bucket-007/
+                            aws s3 ls s3://testing-s3-bucket-007/
+                            aws s3 rm s3://testing-s3-bucket-007/admin.conf
+                            aws s3 ls s3://testing-s3-bucket-007/
                             aws s3 cp admin.conf s3://testing-s3-bucket-007/
-
                             aws s3 ls s3://testing-s3-bucket-007/
                          '''
                     } else {
