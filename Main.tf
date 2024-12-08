@@ -225,7 +225,7 @@ resource "aws_lb_target_group" "frontend_tg" {
   protocol    = "HTTP"
   target_type = "instance"                      # Communicates directly with pod IPs
   vpc_id      = aws_vpc.k8s_vpc.id        # VPC where Kubernetes cluster is running
-/*
+
   health_check {
     protocol = "HTTP"
     path     = "/"                         # Root path for health check
@@ -234,7 +234,7 @@ resource "aws_lb_target_group" "frontend_tg" {
     healthy_threshold   = 2
     unhealthy_threshold = 2
   }
-*/
+
   tags = {
     Name = "frontend-tg"
   }
@@ -247,7 +247,7 @@ resource "aws_lb_target_group" "users_tg" {
   protocol    = "HTTP"
   target_type = "instance"
   vpc_id      = aws_vpc.k8s_vpc.id
-/*
+
   health_check {
     protocol = "HTTP"
     path     = "/users"                   # API-specific health check path
@@ -256,7 +256,7 @@ resource "aws_lb_target_group" "users_tg" {
     healthy_threshold   = 2
     unhealthy_threshold = 2
   }
-*/
+
   tags = {
     Name = "users-tg"
   }
@@ -268,7 +268,7 @@ resource "aws_lb_target_group" "products_tg" {
   protocol    = "HTTP"
   target_type = "instance"
   vpc_id      = aws_vpc.k8s_vpc.id
-/*
+
   health_check {
     protocol = "HTTP"
     path     = "/products"                   # API-specific health check path
@@ -277,7 +277,7 @@ resource "aws_lb_target_group" "products_tg" {
     healthy_threshold   = 2
     unhealthy_threshold = 2
   }
-*/
+
   tags = {
     Name = "users-tg"
   }
