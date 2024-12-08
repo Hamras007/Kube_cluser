@@ -221,7 +221,7 @@ resource "aws_lb" "k8s_nlb" {
 # Create NLB Target Group
 resource "aws_lb_target_group" "frontend_tg" {
   name        = "frontend-tg"
-  port        = 8000
+  port        = 30003
   protocol    = "HTTP"
   target_type = "instance"                      # Communicates directly with pod IPs
   vpc_id      = aws_vpc.k8s_vpc.id        # VPC where Kubernetes cluster is running
@@ -243,7 +243,7 @@ resource "aws_lb_target_group" "frontend_tg" {
 
 resource "aws_lb_target_group" "users_tg" {
   name        = "users-tg"
-  port        = 8081
+  port        = 30002
   protocol    = "HTTP"
   target_type = "instance"
   vpc_id      = aws_vpc.k8s_vpc.id
@@ -264,7 +264,7 @@ resource "aws_lb_target_group" "users_tg" {
 
 resource "aws_lb_target_group" "products_tg" {
   name        = "products-tg"
-  port        = 8082
+  port        = 30001
   protocol    = "HTTP"
   target_type = "instance"
   vpc_id      = aws_vpc.k8s_vpc.id
