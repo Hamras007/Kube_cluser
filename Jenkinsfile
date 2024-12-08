@@ -5,7 +5,7 @@ pipeline {
             args '--privileged -v /var/run/docker.sock:/var/run/docker.sock --entrypoint="" -u root'
         }
     }
-    environment { 
+    environment {  
         PATH = "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
         DOCKER_TLS_CERTDIR = ''
         AWS_ACCESS_KEY_ID     = credentials('aws_access_key_id')
