@@ -221,9 +221,9 @@ resource "aws_lb" "k8s_nlb" {
 # Create NLB Target Group
 resource "aws_lb_target_group" "frontend_tg" {
   name        = "frontend-tg"
-  port        = 80
+  port        = 30003
   protocol    = "HTTP"
-  target_type = "ip"                      # Communicates directly with pod IPs
+  target_type = "instance"                      # Communicates directly with pod IPs
   vpc_id      = aws_vpc.k8s_vpc.id        # VPC where Kubernetes cluster is running
 
   health_check {
@@ -243,9 +243,9 @@ resource "aws_lb_target_group" "frontend_tg" {
 
 resource "aws_lb_target_group" "users_tg" {
   name        = "users-tg"
-  port        = 80
+  port        = 30002
   protocol    = "HTTP"
-  target_type = "ip"
+  target_type = "instance"
   vpc_id      = aws_vpc.k8s_vpc.id
 
   health_check {
@@ -264,9 +264,9 @@ resource "aws_lb_target_group" "users_tg" {
 
 resource "aws_lb_target_group" "products_tg" {
   name        = "products-tg"
-  port        = 80
+  port        = 30003
   protocol    = "HTTP"
-  target_type = "ip"
+  target_type = "instance"
   vpc_id      = aws_vpc.k8s_vpc.id
 
   health_check {
@@ -296,28 +296,30 @@ resource "aws_lb_listener" "frontend_listener" {
   }
 }
 
+
+
 resource "aws_lb_listener" "users_listener" {
   load_balancer_arn = aws_lb.k8s_nlb.arn
-  port              = 8081                       # Backend API port
+  port              = 81                       # Backend API port
   protocol          = "HTTP"
 
   default_action {
     type             = "forward"
     target_group_arn = aws_lb_target_group.users_tg.arn
-  }
 }
-
+}
 
 resource "aws_lb_listener" "products_listener" {
   load_balancer_arn = aws_lb.k8s_nlb.arn
-  port              = 8082                       # Backend API port
+  port              = 82                       # Backend API port
   protocol          = "HTTP"
 
   default_action {
     type             = "forward"
     target_group_arn = aws_lb_target_group.products_tg.arn
-  }
 }
+}
+
 
 
 
@@ -369,7 +371,9 @@ resource "aws_autoscaling_group" "worker_node_asg" {
   force_delete              = true
   wait_for_capacity_timeout = "0"
 
-target_group_arns = [aws_lb_target_group.k8s_nlb_target_group.arn]
+target_group_arns = [
+aws_lb_target_group.frontend_tg.arn, aws_lb_target_group.users_tg.arn, aws_lb_target_group.products_tg.arn 
+]
 
   tag {
     key                 = "Name"
@@ -521,4 +525,5 @@ resource "null_resource" "copy_admin_conf" {
     command = "scp -o StrictHostKeyChecking=no -i ${local_file.private_key_file.filename} ubuntu@${aws_instance.control_plane.public_ip}:/home/ubuntu/admin.conf ${path.module}/"
   }
 }
+
 
