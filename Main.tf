@@ -221,7 +221,7 @@ resource "aws_lb" "k8s_nlb" {
 # Create NLB Target Group
 resource "aws_lb_target_group" "frontend_tg" {
   name        = "frontend-tg"
-  port        = 30003
+  port        = 8000
   protocol    = "HTTP"
   target_type = "instance"                      # Communicates directly with pod IPs
   vpc_id      = aws_vpc.k8s_vpc.id        # VPC where Kubernetes cluster is running
@@ -243,7 +243,7 @@ resource "aws_lb_target_group" "frontend_tg" {
 
 resource "aws_lb_target_group" "users_tg" {
   name        = "users-tg"
-  port        = 30002
+  port        = 8081
   protocol    = "HTTP"
   target_type = "instance"
   vpc_id      = aws_vpc.k8s_vpc.id
@@ -264,7 +264,7 @@ resource "aws_lb_target_group" "users_tg" {
 
 resource "aws_lb_target_group" "products_tg" {
   name        = "products-tg"
-  port        = 30001
+  port        = 8082
   protocol    = "HTTP"
   target_type = "instance"
   vpc_id      = aws_vpc.k8s_vpc.id
@@ -284,7 +284,7 @@ resource "aws_lb_target_group" "products_tg" {
 }
  
 
-# Create NLB Listener
+# Create ALB Listener
 resource "aws_lb_listener" "frontend_listener" {
   load_balancer_arn = aws_lb.k8s_nlb.arn
   port              = 80
@@ -319,6 +319,60 @@ resource "aws_lb_listener" "products_listener" {
     target_group_arn = aws_lb_target_group.products_tg.arn
 }
 }
+
+
+
+
+
+# Listener rules
+
+
+
+resource "aws_lb_listener_rule" "frontend_service" {
+  listener_arn = aws_lb_listener.frontend_listener.arn
+  priority     = 5
+  condition {
+   path_pattern {
+    values = ["/"]
+  }
+}
+  action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.frontend_tg.arn
+  }
+}
+
+
+resource "aws_lb_listener_rule" "user_service" {
+  listener_arn = aws_lb_listener.users_listener.arn
+  priority     = 10
+  condition {
+    path_pattern {
+    values = ["/users"]
+  }
+}
+  action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.users_tg.arn
+  }
+}
+
+
+resource "aws_lb_listener_rule" "product_service" {
+  listener_arn = aws_lb_listener.products_listener.arn
+  priority     = 20
+  condition {
+    path_pattern {
+    values = ["/products"]
+}  
+}
+  action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.products_tg.arn
+  }
+}
+
+
 
 
 
@@ -493,10 +547,10 @@ resource "null_resource" "ansible_provision" {
   depends_on = [ aws_instance.control_plane, aws_autoscaling_group.worker_node_asg, aws_lb.k8s_nlb ] 
   provisioner "local-exec" {
 
-    command= "sleep 10 && ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i ${local_file.inventory.filename} playbook.yml --private-key=${local_file.private_key_file.filename}"
+    command= "sleep 10 && ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i ${local_file.inventory.filename} ping_playbook.yml --private-key=${local_file.private_key_file.filename}"
   }
 }
-
+/*
 resource "null_resource" "kube_conf_retrieve" {
   depends_on = [null_resource.ansible_provision]
   provisioner "remote-exec" {
@@ -526,4 +580,4 @@ resource "null_resource" "copy_admin_conf" {
   }
 }
 
-
+*/
