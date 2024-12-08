@@ -223,12 +223,12 @@ resource "aws_lb_target_group" "frontend_tg" {
   name        = "frontend-tg"
   port        = 30003
   protocol    = "HTTP"
-  target_type = "instance"                      # Communicates directly with pod IPs
+  target_type = "instance"                      # Communicates directly with instance
   vpc_id      = aws_vpc.k8s_vpc.id        # VPC where Kubernetes cluster is running
 
   health_check {
     protocol = "HTTP"
-    path     = "/"                         # Root path for health check
+    path     = "/"                         
     interval            = 30
     timeout             = 5
     healthy_threshold   = 2
