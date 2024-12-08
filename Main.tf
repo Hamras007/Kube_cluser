@@ -264,7 +264,7 @@ resource "aws_lb_target_group" "users_tg" {
 
 resource "aws_lb_target_group" "products_tg" {
   name        = "products-tg"
-  port        = 30003
+  port        = 30001
   protocol    = "HTTP"
   target_type = "instance"
   vpc_id      = aws_vpc.k8s_vpc.id
@@ -300,7 +300,7 @@ resource "aws_lb_listener" "frontend_listener" {
 
 resource "aws_lb_listener" "users_listener" {
   load_balancer_arn = aws_lb.k8s_nlb.arn
-  port              = 81                       # Backend API port
+  port              = 82                       # Backend API port
   protocol          = "HTTP"
 
   default_action {
@@ -311,7 +311,7 @@ resource "aws_lb_listener" "users_listener" {
 
 resource "aws_lb_listener" "products_listener" {
   load_balancer_arn = aws_lb.k8s_nlb.arn
-  port              = 82                       # Backend API port
+  port              = 81                       # Backend API port
   protocol          = "HTTP"
 
   default_action {
