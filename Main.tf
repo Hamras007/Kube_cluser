@@ -547,7 +547,7 @@ resource "null_resource" "ansible_provision" {
   depends_on = [ aws_instance.control_plane, aws_autoscaling_group.worker_node_asg, aws_lb.k8s_nlb ] 
   provisioner "local-exec" {
 
-    command= "sleep 10 && ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i ${local_file.inventory.filename} playbook.yml --private-key=${local_file.private_key_file.filename}"
+    command= "sleep 30 && ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i ${local_file.inventory.filename} playbook.yml --private-key=${local_file.private_key_file.filename}"
   }
 }
 
